@@ -51,7 +51,7 @@ ggplot(
 ## Cluster `iris` using `kmeans`
 
 ```{r}
-# cluster using kmeans
+# cluster using kmeans - defaults to 10 max iterations allowed
 k <- 3  # number of clusters
 iris_k <- kmeans(
   iris %>% 
@@ -79,6 +79,10 @@ ggplot(iris, aes(Petal.Length, Petal.Width, color = Cluster)) +
   geom_point() + 
   legend_pos
 ```
+
+Question: Comparing the observed species plot with 3 species with the kmeans() cluster plot with 3 clusters, where does this “unsupervised” kmeans() technique (that does not use species to “fit” the model) produce similar versus different results? One or two sentences would suffice. Feel free to mention ranges of values along the axes.
+
+**Overall, the `kmeans()` clustering performs very accurately. From $x$ = ~1 to ~4.5 and $x$ > ~5.5, the clusters are identical. From $x$ = ~4.5 to ~5.5, `kmeans()` classified things a bit differently---this is unsurprising as the true *versicolor* and *virginica* clusters overlap slightly within that interval.**
 
 ```{r}
 librarian::shelf(ggvoronoi, scales)
@@ -193,9 +197,13 @@ if (interactive())
   help(dune)
 ```
 
+Question: In your own words, how does Bray Curtis differ from Euclidean distance? See sites_euclidean versus sites_bray from lab code, slides from Lecture 05. Clustering and reading Chapter 8 of Kindt and Coe (2005).
+
+**Euclidean distance treats species as axes and each site is plotted according to the abundance of species corresponding with each axis---the distance is the deemed to be the actual 'length' of the distance between the points plotted on some n-dimensional plane/hyperplane. Bray-Curtis distances are calculated from differences in abundance of each species, and unlike Euclidean distance, are constrained between 0 and 1---0 being most similar, and 1 lacking any species overlap.**
+
 Question: What are the rows and columns composed of in the dune data frame?
 
-Answer: **The columns represent 30 different veg species, and the rows represent 20 different sites.**
+**The columns represent 30 different veg species, and the rows represent 20 different sites.**
 
 ## Calculate Ecological Distances on `sites`
 
@@ -244,6 +252,10 @@ hc1 <- hclust(d, method = "complete" )
 plot(hc1, cex = 0.6, hang = -1)
 ```
 
+Question: Which function comes first, vegdist() or hclust(), and why?
+
+**`vegdist()` comes first becuase `vegdist()` calculates the ecological distances between each site. Distances are the input required by `hclust()`, which it uses to build the hierarchical structure.**
+
 ```{r}
 # Compute agglomerative clustering with agnes
 hc2 <- agnes(dune, method = "complete")
@@ -252,9 +264,39 @@ hc2 <- agnes(dune, method = "complete")
 hc2$ac
 ```
 
+Question: In your own words how does hclust() differ from agnes()?
+
+**`agnes()`, like `hclust()` performs agglomerative hierarchical clustering, but it is able to accept a dataframe as input because it has distance functionality built into it, *and* it provides an agglomerative coefficient which describes the amount of clustering structure.**
+
 ```{r}
 # Dendrogram plot of hc2
 plot(hc2, which.plot = 2)
+```
+
+```{r}
+# methods to assess
+m <- c( "average", "single", "complete", "ward")
+names(m) <- c( "average", "single", "complete", "ward")
+
+# function to compute coefficient
+ac <- function(x) {
+  agnes(dune, method = x)$ac
+}
+
+# get agglomerative coefficient for each linkage method
+purrr::map_dbl(m, ac)
+```
+
+Question: Of the 4 methods, which is the “best” model in terms of Agglomerative Coefficient?
+
+**Based on the ACs returned, ward appears to be the best model.**
+
+```{r}
+# Compute ward linkage clustering with agnes
+hc3 <- agnes(dune, method = "ward")
+
+# Agglomerative coefficient
+hc3$ac
 ```
 
 ## Divisive hierarchical clustering on `dune`
@@ -266,6 +308,10 @@ hc4 <- diana(dune)
 # Divise coefficient; amount of clustering structure found
 hc4$dc
 ```
+
+Question: In your own words how does agnes() differ from diana()?
+
+**`agnes()` performs agglomerative hierarchical clustering (bottom to top), while `diana()` performs divisive hierarchical clustering (top to bottom).**
 
 ```{r}
 librarian::shelf(factoextra)
@@ -286,13 +332,19 @@ p3 <- fviz_nbclust(dune, FUN = hcut, method = "gap_stat", k.max = 10) +
 gridExtra::grid.arrange(p1, p2, p3, nrow = 1)
 ```
 
+Question: How do the optimal number of clusters compare between methods for those with a dashed line?
+
+**The silhouette method suggests 4 clusters as optimal whereas the gap statistic method suggests 3.**
+
+Question: In dendrogram plots, which is the biggest determinant of relatedness between observations: the distance between observations along the labeled axes or the height of their shared connection?
+
+**The height of the shared connection between observations is the primary indicator of relatedness.**
+
 ```{r}
 # Construct dendorgram for the Ames housing example
 hc5 <- hclust(d, method = "ward.D2" )
 dend_plot <- fviz_dend(hc5)
-```
 
-```{r}
 dend_data <- attr(dend_plot, "dendrogram")
 dend_cuts <- cut(dend_data, h = 8)
 fviz_dend(dend_cuts$lower[[2]])
@@ -368,6 +420,10 @@ my_pca <- h2o.prcomp(
   max_runtime_secs = 1000)
 my_pca
 ```
+
+Question: Why is the pca_method of “GramSVD” chosen over “GLRM”?
+
+**GramSVD is used here because the data are numeric---GLRM is better when the dataset contains more categorical variables.**
 
 ```{r}
 my_pca@model$eigenvectors %>% 
