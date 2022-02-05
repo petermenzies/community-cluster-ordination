@@ -433,6 +433,9 @@ my_pca@model$eigenvectors %>%
   geom_point()
 ```
 
+Question: How many initial principal components are chosen with respect to dimensions of the input data?
+
+**42**
 
 ```{r}
 my_pca@model$eigenvectors %>% 
@@ -441,6 +444,14 @@ my_pca@model$eigenvectors %>%
   ggplot(aes(pc1, pc2, label = feature)) +
   geom_text()
 ```
+
+Question: What category of grocery items contribute most to PC1?
+
+**Alcoholic beverages**
+
+Question: What category of grocery items contribute the least to PC1 but positively towards PC2?
+
+**Vegetables**
 
 ### Eigenvalue criterion
 
@@ -475,13 +486,17 @@ ve %>%
   facet_wrap(~ metric, ncol = 1, scales = "free")
 ```
 
+Question: How many principal components would you include to explain 90% of the total variance?
+
+**35 principal components which will explain ~89.83% of the variance.**
+
 ```{r}
 # How many PCs required to explain at least 75% of total variability
 min(which(ve$CVE >= 0.75))
 ```
 
 ```{r}
-# Screen plot criterion
+# Scree plot criterion
 data.frame(
   PC  = my_pca@model$importance %>% seq_along,
   PVE = my_pca@model$importance %>% .[2,] %>% unlist()) %>%
@@ -490,6 +505,14 @@ data.frame(
   geom_line() +
   geom_text(nudge_y = -.002)
 ```
+
+Question: How many principal components to include up to the elbow of the PVE, i.e. the “elbow” before plateau of dimensions explaining the least variance?
+
+**8 principal components. At that point the proportion of variance explained flattens considerably.**
+
+Question: What are a couple of disadvantages to using PCA?
+
+**Some disadvantages of using PCA include: PCA can be greatly impacted by outliers, and PCA doesn't perform well when nonlinear relationships exist as is often in the case with highly dimensional datasets.**
 
 ## Non-metric MultiDimensional Scaling (NMDS)
 
@@ -509,16 +532,27 @@ data("varechem") # chemistry
 varespec %>% tibble()
 ```
 
+Question: What are the dimensions of the varespec data frame and what do rows versus columns represent?
+
+**The `varespec` df has 24 rows and 44 columns---the columns are different veg species and the rows are estimated cover values in different lichen pasture sites.**
+
 ```{r}
 vare.dis <- vegdist(varespec)
 vare.mds0 <- monoMDS(vare.dis)
 stressplot(vare.mds0)
 ```
 
+Question: The “stress” in a stressplot represents the difference between the observed inpnut distance versus the fitted ordination distance. How much better is the non-metric (i.e., NMDS) fit versus a linear fit (as with PCA) in terms of \(R^2\)?
+
+**Based on the $R^2$ values in the stressplot, the nonmetric fit explains 4.7% more of the variation than the linear fit.**
 
 ```{r}
 ordiplot(vare.mds0, type = "t")
 ```
+
+Question: What two sites are most dissimilar based on species composition for the first component MDS1? And two more most dissimilar sites for the second component MDS2?
+
+**Sites 5 and 28 are most dissimilar for MDS1; sites 14 and 21 are most dissimilar for MDS2.**
 
 ```{r}
 vare.mds <- metaMDS(varespec, trace = FALSE)
@@ -529,6 +563,10 @@ vare.mds
 ```{r}
 plot(vare.mds, type = "t")
 ```
+
+Question: What is the basic difference between metaMDS and monoMDS()?
+
+**The `monoMDS()` function takes dissimilarities as input and uses a single random configuration as the starting solution and iterates from there. The `metaMDS()` function, on the other hand, can take the original dataframe as input and uses several random starts---this is a better approach for finding the global optimum and not just a local optimum which can happen with `monoMDS()`.**
 
 
 ```{r}
@@ -542,6 +580,9 @@ plot(vare.mds, display = "sites")
 plot(ef, p.max = 0.05)
 ```
 
+Question: What two soil chemistry elements have the strongest negative relationship with NMDS1 that is based on species composition?
+
+**Aluminum and iron**
 
 ```{r}
 ef <- envfit(vare.mds ~ Al + Ca, data = varechem)
@@ -552,6 +593,10 @@ tmp <- with(varechem, ordisurf(vare.mds, Al, add = TRUE))
 ordisurf(vare.mds ~ Ca, data=varechem, add = TRUE, col = "green4")
 ```
 
+Question: Describe in general terms (upper/lower/left/right/middle) where the highest and lowest values are found for Ca with respect to the ordination axes NMDS1 and NMDS2.
+
+**The highest values for CA (with respect to the ordination axes) are found in the upper-middle(ish) and the lowest values are found in the lower-left.**
+
 ### Constrained Ordination on Species and Environment
 
 ```{r}
@@ -560,13 +605,18 @@ vare.cca <- cca(varespec ~ Al + P + K, varechem)
 vare.cca
 ```
 
+Question: What is the difference between “constrained” versus “unconstrained” ordination within ecological context?
 
+**Unconstrained ordination looks first for compositional variation and then relates that to environmental variation; whereas, constrained ordination seeks to specifically display the variation explained by the environmental variables of interest.**
 
 ```{r}
 # plot ordination
 plot(vare.cca)
 ```
 
+Question: What sites are most differentiated by CCA1, i.e. furthest apart along its axis, based on species composition AND the environmnent? What is the strongest environmental vector for CCA1, i.e. longest environmental vector in the direction of the CCA1 axes?
+
+**Sites 4 and 28 are the most differentiated by `CCA1`. Aluminum is the strongest environmental vector for `CCA1`**
 
 ```{r}
 # plot 3 dimensions
