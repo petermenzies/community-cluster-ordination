@@ -2,7 +2,10 @@
 title: "Lab 2 - Community"
 author: "Peter Menzies"
 date: "1/30/2022"
-output: html_document
+output:
+  distill::distill_article:
+    toc: true
+    toc_float: true
 ---
 
 ```{r setup, include=FALSE}
@@ -199,7 +202,7 @@ if (interactive())
 
 Question: In your own words, how does Bray Curtis differ from Euclidean distance? See sites_euclidean versus sites_bray from lab code, slides from Lecture 05. Clustering and reading Chapter 8 of Kindt and Coe (2005).
 
-**Euclidean distance treats species as axes and each site is plotted according to the abundance of species corresponding with each axis---the distance is the deemed to be the actual 'length' of the distance between the points plotted on some n-dimensional plane/hyperplane. Bray-Curtis distances are calculated from differences in abundance of each species, and unlike Euclidean distance, are constrained between 0 and 1---0 being most similar, and 1 lacking any species overlap.**
+**Euclidean distance treats species as axes and each site is plotted according to the abundance of species corresponding with each axis---the distance is deemed to be the actual 'length' of the distance between the points plotted on some n-dimensional plane/hyperplane. Bray-Curtis distances are calculated from differences in abundance of each species, and unlike Euclidean distance, are constrained between 0 and 1---0 being most similar, and 1 lacking any species overlap.**
 
 Question: What are the rows and columns composed of in the dune data frame?
 
@@ -451,7 +454,7 @@ Question: What category of grocery items contribute most to PC1?
 
 Question: What category of grocery items contribute the least to PC1 but positively towards PC2?
 
-**Vegetables**
+**Breakfast items**
 
 ### Eigenvalue criterion
 
